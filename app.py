@@ -4,8 +4,8 @@ import numpy as np
 import plotly.express as px
 import os
 from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
-from src.models import get_all_models
-from src.data_prep import load_and_prepare_data
+from scr.models import get_all_models
+from scr.data_prep import load_and_prepare_data
 
 # ==========================================
 # КОНФІГУРАЦІЯ ТА СТИЛІ
@@ -28,7 +28,7 @@ DASH_MAP = {
 # Завантаження даних з перевіркою
 @st.cache_data
 def load_data():
-    file_path = 'data/final_data.csv'
+    file_path = 'final_data.csv'
     # Дебаг: перевірка шляху, якщо файл не знайдено
     if not os.path.exists(file_path):
         st.error(f"ФАЙЛ НЕ ЗНАЙДЕНО: {file_path}")
@@ -86,10 +86,15 @@ if page == "📊 Графіки та Аналіз":
     # 2. Додаємо прогнози
     if selected_model_names:
         try:
-            data_out = load_and_prepare_data('data/final_data.csv')
-            X_train, y_train = data_out[0], data_out[1]
+            data_out = load_and_prepare_data('final_data.csv')
+            X_train, y_train, X_test, y_test = data_out
             last_act_date = df['month_dt'].iloc[-1]
-            aligned_dates = df['month_dt'].iloc[-len(y_train):].tolist()
+
+            history_df = df.sort_values('month_dt').copy()
+            history_df['lag_1'] = history_df['case_count'].shift(1)
+            history_df = history_df.dropna()
+            history_dates = history_df['month_dt'].tolist()
+            X_history = history_df[['lag_1']]
             
             models = get_all_models()
             for name in selected_model_names:
@@ -97,8 +102,8 @@ if page == "📊 Графіки та Аналіз":
                 model.fit(X_train, y_train)
                 
                 # Історія
-                hist_preds = model.predict(X_train)
-                for d, p in zip(aligned_dates, hist_preds):
+                hist_preds = model.predict(X_history)
+                for d, p in zip(history_dates, hist_preds):
                     if d.year in selected_years:
                         plot_rows.append({"Дата": d, "Випадки": p, "Модель": name, "Тип": "Історія (навчання моделі)"})
                 
@@ -127,8 +132,8 @@ elif page == "📈 Метрики моделей":
     st.write("Розрахунок MAPE, MAE, MSE та RMSE на основі порівняння реальних даних із прогнозами моделей.")
     
     try:
-        data_out = load_and_prepare_data('data/final_data.csv')
-        X_eval, y_eval = data_out[0], data_out[1] 
+        data_out = load_and_prepare_data('final_data.csv')
+        X_train, y_train, X_eval, y_eval = data_out
         
         models = get_all_models()
         metrics_results = []

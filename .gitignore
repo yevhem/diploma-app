@@ -1,0 +1,22 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.$py.class
+
+# Byte-compiled / optimized / DLL files
+*.so
+*.dylib
+*.pyd
+
+# Streamlit cache
+.streamlit/
+
+# Environments
+.env
+.venv
+venv/
+ENV/
+
+# OS files
+.DS_Store
+Thumbs.db
