@@ -58,7 +58,7 @@ df = load_data()
 # НАВІГАЦІЯ
 # ==========================================
 st.sidebar.title("🛠 Навігація")
-page = st.sidebar.radio("Перейти до:", ["📊 Аналіз гонореї", "📊 Сезонна декомпозиція", "📊 Аналіз кореляції", "📈 Метрики моделей"])
+page = st.sidebar.radio("Перейти до:", ["📊 Аналіз гонореї", "📊 Сезонна декомпозиція", "📊 Аналіз кореляції", "� Аналіз розподілу", "�📈 Метрики моделей"])
 st.sidebar.markdown("---")
 
 # ==========================================
@@ -365,7 +365,159 @@ elif page == "📊 Аналіз кореляції":
         st.error(f"❌ Помилка при виконанні аналізу кореляції: {e}")
 
 # ==========================================
-# СТОРІНКА 4: МЕТРИКИ
+# СТОРІНКА 4: АНАЛІЗ РОЗПОДІЛУ
+# ==========================================
+elif page == "📊 Аналіз розподілу":
+    st.title("📊 Аналіз розподілу захворюваності")
+    st.caption("Гістограма розподілу та діаграма розмаху для детекції викидів")
+    
+    try:
+        # Статистика розподілу
+        st.sidebar.header("Налаштування аналізу")
+        show_histogram = st.sidebar.checkbox("Показати гістограму", value=True)
+        show_boxplot = st.sidebar.checkbox("Показати boxplot", value=True)
+        show_stats = st.sidebar.checkbox("Показати статистику", value=True)
+        
+        case_counts = df['case_count']
+        
+        if show_histogram or show_boxplot:
+            st.subheader("📈 Графіки розподілу")
+            
+            fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+            
+            # Гістограма з кривою щільності
+            if show_histogram:
+                sns.histplot(case_counts, kde=True, ax=axes[0], color='teal', bins=20, edgecolor='black')
+                axes[0].set_title('Гістограма розподілу частот захворюваності', fontsize=12, fontweight='bold')
+                axes[0].set_xlabel('Кількість зареєстрованих випадків', fontsize=11)
+                axes[0].set_ylabel('Частота (кількість місяців)', fontsize=11)
+                axes[0].grid(True, alpha=0.3)
+                
+                # Лінії середнього та медіани
+                mean_val = case_counts.mean()
+                median_val = case_counts.median()
+                axes[0].axvline(mean_val, color='red', linestyle='--', linewidth=2, label=f'Середнє: {mean_val:.1f}')
+                axes[0].axvline(median_val, color='green', linestyle='--', linewidth=2, label=f'Медіана: {median_val:.1f}')
+                axes[0].legend()
+            
+            # Boxplot
+            if show_boxplot:
+                sns.boxplot(y=case_counts, ax=axes[1], color='orange')
+                axes[1].set_title('Діаграма розмаху (Boxplot) для детекції викидів', fontsize=12, fontweight='bold')
+                axes[1].set_ylabel('Кількість зареєстрованих випадків', fontsize=11)
+                axes[1].grid(True, alpha=0.3, axis='y')
+                
+                # Позначення квартилей
+                median = case_counts.median()
+                q1 = case_counts.quantile(0.25)
+                q3 = case_counts.quantile(0.75)
+                axes[1].text(0.15, median, f'Медіана\n{median:.1f}', fontsize=9, ha='left', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+                axes[1].text(0.15, q1, f'Q1\n{q1:.1f}', fontsize=9, ha='left', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+                axes[1].text(0.15, q3, f'Q3\n{q3:.1f}', fontsize=9, ha='left', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+            
+            plt.suptitle('Аналіз розподілу захворюваності на гонорею', fontsize=14, fontweight='bold')
+            plt.tight_layout()
+            st.pyplot(fig)
+            
+            # Збереження графіку
+            output_dir = "outputs"
+            os.makedirs(output_dir, exist_ok=True)
+            output_path = os.path.join(output_dir, "distribution_analysis_streamlit.png")
+            fig.savefig(output_path, dpi=300, bbox_inches='tight')
+            st.success(f"✓ Графік розподілу збережено: `{output_path}`")
+        
+        if show_stats:
+            st.subheader("📊 Описова статистика")
+            
+            # Основні метрики
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("Середнє значення", f"{case_counts.mean():.2f}")
+            
+            with col2:
+                st.metric("Медіана", f"{case_counts.median():.2f}")
+            
+            with col3:
+                st.metric("Мода", f"{case_counts.mode().values[0]:.2f}")
+            
+            with col4:
+                st.metric("Стд. відхилення", f"{case_counts.std():.2f}")
+            
+            # Додаткові метрики
+            col5, col6, col7, col8 = st.columns(4)
+            
+            with col5:
+                st.metric("Мінімум", f"{case_counts.min():.2f}")
+            
+            with col6:
+                st.metric("Максимум", f"{case_counts.max():.2f}")
+            
+            with col7:
+                st.metric("Q1 (25%)", f"{case_counts.quantile(0.25):.2f}")
+            
+            with col8:
+                st.metric("Q3 (75%)", f"{case_counts.quantile(0.75):.2f}")
+            
+            # Таблиця статистики
+            st.subheader("📋 Таблиця описової статистики")
+            stats_table = pd.DataFrame({
+                'Метрика': ['Середнє', 'Медіана', 'Мода', 'Стд. відхилення', 'Дисперсія', 'IQR', 'Мінімум', 'Максимум', 'Кількість спостережень'],
+                'Значення': [
+                    f"{case_counts.mean():.2f}",
+                    f"{case_counts.median():.2f}",
+                    f"{case_counts.mode().values[0]:.2f}",
+                    f"{case_counts.std():.2f}",
+                    f"{case_counts.var():.2f}",
+                    f"{case_counts.quantile(0.75) - case_counts.quantile(0.25):.2f}",
+                    f"{case_counts.min():.2f}",
+                    f"{case_counts.max():.2f}",
+                    f"{len(case_counts)}"
+                ]
+            })
+            st.dataframe(stats_table, use_container_width=True, hide_index=True)
+            
+            # Детекція викидів
+            st.subheader("🔍 Детекція викидів (метод IQR)")
+            Q1 = case_counts.quantile(0.25)
+            Q3 = case_counts.quantile(0.75)
+            IQR = Q3 - Q1
+            lower_bound = Q1 - 1.5 * IQR
+            upper_bound = Q3 + 1.5 * IQR
+            
+            outliers_data = df[(df['case_count'] < lower_bound) | (df['case_count'] > upper_bound)]
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.metric("Нижня межа", f"{lower_bound:.2f}")
+            
+            with col2:
+                st.metric("Верхня межа", f"{upper_bound:.2f}")
+            
+            with col3:
+                st.metric("Кількість викидів", len(outliers_data))
+            
+            if len(outliers_data) > 0:
+                st.warning("⚠️ Знайдено викиди:")
+                outliers_display = outliers_data[['month', 'case_count']].copy()
+                outliers_display.columns = ['Дата', 'Кількість випадків']
+                st.dataframe(outliers_display, use_container_width=True, hide_index=True)
+            else:
+                st.info("✓ Викидів не виявлено")
+            
+            st.info("""
+            **💡 Інтерпретація IQR методу:**
+            - Викиди — це значення, які виходять за межі [Q1 - 1.5×IQR, Q3 + 1.5×IQR]
+            - Цей метод ефективний для ідентифікації експериментальних помилок
+            - IQR (міжквартильний розмах) = Q3 - Q1
+            """)
+        
+    except Exception as e:
+        st.error(f"❌ Помилка при виконанні аналізу розподілу: {e}")
+
+# ==========================================
+# СТОРІНКА 5: МЕТРИКИ
 # ==========================================
 elif page == "📈 Метрики моделей":
     st.title("📈 Математична оцінка моделей")
