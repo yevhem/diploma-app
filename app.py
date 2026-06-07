@@ -10,7 +10,7 @@ from scr.data_prep import load_and_prepare_data
 # ==========================================
 # КОНФІГУРАЦІЯ ТА СТИЛІ
 # ==========================================
-st.set_page_config(page_title="Gonorrhea Analysis", layout="wide")
+st.set_page_config(page_title="Аналіз гонореї", page_icon="🦠", layout="wide")
 
 COLOR_MAP = {
     "Фактичні дані": "#3498db",     # Синій
@@ -55,14 +55,15 @@ df = load_data()
 # НАВІГАЦІЯ
 # ==========================================
 st.sidebar.title("🛠 Навігація")
-page = st.sidebar.radio("Перейти до:", ["📊 Графіки та Аналіз", "📈 Метрики моделей"])
+page = st.sidebar.radio("Перейти до:", ["📊 Аналіз гонореї", "📈 Метрики моделей"])
 st.sidebar.markdown("---")
 
 # ==========================================
 # СТОРІНКА 1: ГРАФІКИ
 # ==========================================
-if page == "📊 Графіки та Аналіз":
-    st.title("📊 Аналіз інфекцій: Графіки")
+if page == "📊 Аналіз гонореї":
+    st.title("📊 Аналіз кількості захворілих на гонорею")
+    st.caption("Графік кількості людей із підтвердженими випадками за часом")
     
     st.sidebar.header("Налаштування")
     show_actuals = st.sidebar.checkbox("Показувати фактичні дані", value=True)
@@ -121,7 +122,12 @@ if page == "📊 Графіки та Аналіз":
         plot_df = pd.DataFrame(plot_rows)
         fig = px.line(plot_df, x="Дата", y="Випадки", color="Модель", line_dash="Тип", 
                       markers=True, color_discrete_map=COLOR_MAP, line_dash_map=DASH_MAP)
-        fig.update_layout(hovermode="x unified", legend=dict(orientation="h", y=1.1))
+        fig.update_layout(
+            hovermode="x unified",
+            legend=dict(orientation="h", y=1.1),
+            xaxis_title="Дата",
+            yaxis_title="Кількість людей"
+        )
         st.plotly_chart(fig, use_container_width=True)
 
 # ==========================================
