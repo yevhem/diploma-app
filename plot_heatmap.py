@@ -73,3 +73,12 @@ out_dir.mkdir(exist_ok=True)
 out = out_dir / 'correlation_heatmap.png'
 plt.savefig(out, dpi=300)
 print(f'Heatmap saved: {out.resolve()}')
+
+# Зберігаємо також повну матрицю кореляцій без маскування
+plt.figure(figsize=(12, 10))
+sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f', square=False, cbar_kws={'shrink': 0.8})
+plt.title('Full correlation matrix')
+plt.tight_layout()
+out_full = out_dir / 'correlation_heatmap_full.png'
+plt.savefig(out_full, dpi=300)
+print(f'Full heatmap saved: {out_full.resolve()}')
