@@ -44,8 +44,22 @@ if len(cols_in_pairs) >= 2:
     filtered_corr = corr.loc[sorted(cols_in_pairs), sorted(cols_in_pairs)]
     sns.heatmap(filtered_corr, annot=True, cmap='coolwarm', fmt='.2f', square=True, cbar_kws={'shrink': 0.8})
     plt.title(f'Correlation heatmap (pairs with |corr| >= {THRESHOLD})')
+elif len(cols_in_pairs) == 1:
+    # Якщо лише одна колонка входить у сильні пари — додатково візьмемо її
+    # топ-N колонок за модулем кореляції, щоб уникнути одиночної точки 1.0
+    target = list(cols_in_pairs)[0]
+    SECONDARY = 0.5
+    # Вибираємо колонки з |corr| >= SECONDARY або топ-3 за модулем
+    others = corr_abs[target].drop(target)
+    selected = list(others[others >= SECONDARY].index)
+    if len(selected) < 1:
+        selected = list(others.abs().sort_values(ascending=False).head(3).index)
+    selected = sorted(set([target] + selected))
+    filtered_corr = corr.loc[selected, selected]
+    sns.heatmap(filtered_corr, annot=True, cmap='coolwarm', fmt='.2f', square=True, cbar_kws={'shrink': 0.8})
+    plt.title(f'Correlation heatmap for {target} (expanded selection)')
 else:
-    # Якщо сильних пар немає або тільки одна колонка — показуємо повну матрицю,
+    # Якщо сильних пар немає — показуємо повну матрицю,
     # але замаскуємо значення з модулем меншим за поріг і не підписуватимемо їх.
     mask = corr_abs < THRESHOLD
     annot = corr.round(2).astype(str)
