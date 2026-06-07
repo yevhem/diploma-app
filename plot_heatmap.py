@@ -4,81 +4,40 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-# Вкажіть тут свої "сміттєві" колонки, які потрібно видалити перед аналізом
-GARBAGE_COLS = ['date', 'city_name', 'id_patient']
-THRESHOLD = 0.95
-
+# Відформатовано згідно вашого прикладу: вивід head, вибір числових колонок, повна матриця
 data_path = Path('final_data.csv')
 if not data_path.exists():
     raise FileNotFoundError('final_data.csv not found. Please provide the dataset in the repository root.')
 
 df = pd.read_csv(data_path)
 
-# Видаляємо вказані сміттєві колонки, якщо вони є
+# Видаляємо можливі "сміттєві" колонки
+GARBAGE_COLS = ['date', 'city_name', 'id_patient']
 cols_to_drop = [c for c in GARBAGE_COLS if c in df.columns]
 if cols_to_drop:
     df = df.drop(columns=cols_to_drop)
 
-# Залишаємо тільки числові колонки
-df_num = df.select_dtypes(include=[np.number])
-if df_num.shape[1] == 0:
-    raise ValueError('No numeric columns found in final_data.csv to compute correlation.')
+# 1. Переконаємося, що df містить дані
+print('Перші 5 рядків датасету:')
+print(df.head().to_string())
 
-# Обчислюємо матрицю кореляції
-corr = df_num.corr()
+# 2. Вибираємо тільки числові колонки
+numeric_df = df.select_dtypes(include=['float64', 'int64'])
 
-# Шукаємо пари колонок з |corr| >= THRESHOLD (без діагоналі)
-corr_abs = corr.abs()
-pairs = []
-cols_in_pairs = set()
-for i in range(len(corr.columns)):
-    for j in range(i + 1, len(corr.columns)):
-        if corr_abs.iat[i, j] >= THRESHOLD:
-            a = corr.columns[i]
-            b = corr.columns[j]
-            pairs.append((a, b, corr.iat[i, j]))
-            cols_in_pairs.update([a, b])
+# 3. Перевірка колонок
+print('Колонки, які будуть на графіку:', list(numeric_df.columns))
 
+# 4. Матриця кореляції для всіх числових колонок
+correlation_matrix = numeric_df.corr()
+
+# 5. Малюємо та зберігаємо повну матрицю
 plt.figure(figsize=(10, 8))
-if len(cols_in_pairs) >= 2:
-    filtered_corr = corr.loc[sorted(cols_in_pairs), sorted(cols_in_pairs)]
-    sns.heatmap(filtered_corr, annot=True, cmap='coolwarm', fmt='.2f', square=True, cbar_kws={'shrink': 0.8})
-    plt.title(f'Correlation heatmap (pairs with |corr| >= {THRESHOLD})')
-elif len(cols_in_pairs) == 1:
-    # Якщо лише одна колонка входить у сильні пари — додатково візьмемо її
-    # топ-N колонок за модулем кореляції, щоб уникнути одиночної точки 1.0
-    target = list(cols_in_pairs)[0]
-    SECONDARY = 0.5
-    # Вибираємо колонки з |corr| >= SECONDARY або топ-3 за модулем
-    others = corr_abs[target].drop(target)
-    selected = list(others[others >= SECONDARY].index)
-    if len(selected) < 1:
-        selected = list(others.abs().sort_values(ascending=False).head(3).index)
-    selected = sorted(set([target] + selected))
-    filtered_corr = corr.loc[selected, selected]
-    sns.heatmap(filtered_corr, annot=True, cmap='coolwarm', fmt='.2f', square=True, cbar_kws={'shrink': 0.8})
-    plt.title(f'Correlation heatmap for {target} (expanded selection)')
-else:
-    # Якщо сильних пар немає — показуємо повну матрицю,
-    # але замаскуємо значення з модулем меншим за поріг і не підписуватимемо їх.
-    mask = corr_abs < THRESHOLD
-    annot = corr.round(2).astype(str)
-    annot = annot.where(~mask, other='')
-    sns.heatmap(corr, annot=annot, cmap='coolwarm', fmt='', square=True, cbar_kws={'shrink': 0.8}, mask=mask)
-    plt.title(f'Correlation heatmap (values with |corr| < {THRESHOLD} hidden)')
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Матриця кореляції')
 plt.tight_layout()
 
 out_dir = Path('outputs')
 out_dir.mkdir(exist_ok=True)
-out = out_dir / 'correlation_heatmap.png'
-plt.savefig(out, dpi=300)
-print(f'Heatmap saved: {out.resolve()}')
-
-# Зберігаємо також повну матрицю кореляцій без маскування
-plt.figure(figsize=(12, 10))
-sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f', square=False, cbar_kws={'shrink': 0.8})
-plt.title('Full correlation matrix')
-plt.tight_layout()
 out_full = out_dir / 'correlation_heatmap_full.png'
 plt.savefig(out_full, dpi=300)
 print(f'Full heatmap saved: {out_full.resolve()}')
