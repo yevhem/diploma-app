@@ -2,9 +2,12 @@ from pathlib import Path
 from docx import Document
 from datetime import datetime
 
-src = Path('descriptive_stats.docx')
+out_dir = Path('outputs')
+out_dir.mkdir(exist_ok=True)
+
+src = out_dir / 'descriptive_stats.docx'
 if not src.exists():
-    raise FileNotFoundError('descriptive_stats.docx not found. Run csv_to_docx.py first.')
+    raise FileNotFoundError('outputs/descriptive_stats.docx not found. Run csv_to_docx.py first.')
 
 doc = Document(src)
 
@@ -17,6 +20,6 @@ p = doc.add_paragraph()
 p.add_run('Дата генерації: ').bold = True
 p.add_run(now)
 
-out = Path('descriptive_stats_signed.docx')
+out = out_dir / 'descriptive_stats_signed.docx'
 doc.save(out)
 print(f"Signed document saved: {out.resolve()}")
