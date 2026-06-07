@@ -58,7 +58,7 @@ df = load_data()
 # НАВІГАЦІЯ
 # ==========================================
 st.sidebar.title("🛠 Навігація")
-page = st.sidebar.radio("Перейти до:", ["📊 Аналіз гонореї", "📊 Сезонна декомпозиція", "📊 Аналіз кореляції", "� Аналіз розподілу", "�📈 Метрики моделей"])
+page = st.sidebar.radio("Перейти до:", ["📊 Аналіз гонореї", "📊 Сезонна декомпозиція", "📊 Аналіз кореляції", "📊 Аналіз розподілу", "📈 Метрики моделей"])
 st.sidebar.markdown("---")
 
 # ==========================================
@@ -529,17 +529,18 @@ elif page == "📈 Метрики моделей":
         
         models = get_all_models()
         metrics_results = []
-        predictions_dict = {"Реальні значення": y_eval.flatten() if hasattr(y_eval, 'flatten') else y_eval}
+        y_eval_vals = np.asarray(y_eval).ravel()
+        predictions_dict = {"Реальні значення": y_eval_vals}
         
         for name, model in models.items():
-            model.fit(X_eval, y_eval)
+            model.fit(X_train, y_train)
             preds = model.predict(X_eval)
             predictions_dict[f"Прогноз: {name}"] = preds
             
-            mae = mean_absolute_error(y_eval, preds)
-            mse = mean_squared_error(y_eval, preds)
+            mae = mean_absolute_error(y_eval_vals, preds)
+            mse = mean_squared_error(y_eval_vals, preds)
             rmse = np.sqrt(mse)
-            mape = mean_absolute_percentage_error(y_eval, preds) * 100
+            mape = mean_absolute_percentage_error(y_eval_vals, preds) * 100
             
             metrics_results.append({
                 "Модель": name,
