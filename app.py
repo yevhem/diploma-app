@@ -194,6 +194,22 @@ elif page == "📊 Сезонна декомпозиція":
         output_path = os.path.join(output_dir, "seasonal_decomposition_streamlit.png")
         fig.savefig(output_path, dpi=300, bbox_inches='tight')
         st.success(f"✓ Графік збережено: `{output_path}`")
+
+        # Збереження англомовної копії
+        axes[0].set_ylabel('Observed', fontsize=10)
+        axes[0].set_title('Observed data', fontsize=11)
+        axes[1].set_ylabel('Trend', fontsize=10)
+        axes[1].set_title('Trend (long-term dynamics)', fontsize=11)
+        axes[2].set_ylabel('Seasonal', fontsize=10)
+        axes[2].set_title('Seasonal component', fontsize=11)
+        axes[3].set_ylabel('Residuals', fontsize=10)
+        axes[3].set_xlabel('Date', fontsize=10)
+        axes[3].set_title('Residuals (model errors)', fontsize=11)
+        fig.suptitle('Seasonal decomposition of gonorrhea morbidity time series', fontsize=14, fontweight='bold')
+        plt.tight_layout()
+        output_path_en = os.path.join(output_dir, "seasonal_decomposition_streamlit_en.png")
+        fig.savefig(output_path_en, dpi=300, bbox_inches='tight')
+        st.success(f"✓ English chart saved: `{output_path_en}`")
         
         # Статистика
         st.subheader("📈 Статистика компонент")
@@ -304,6 +320,17 @@ elif page == "📊 Аналіз кореляції":
             output_path = os.path.join(output_dir, "correlation_heatmap_streamlit.png")
             fig.savefig(output_path, dpi=300, bbox_inches='tight')
             st.success(f"✓ Графік кореляції збережено: `{output_path}`")
+
+            # Збереження англомовної копії
+            ax.set_title('Correlation matrix of target variable and lag features', fontsize=14, fontweight='bold', pad=20)
+            ax.set_xlabel('Features', fontsize=12)
+            ax.set_ylabel('Features', fontsize=12)
+            plt.xticks(rotation=45, ha='right')
+            plt.yticks(rotation=0)
+            plt.tight_layout()
+            output_path_en = os.path.join(output_dir, "correlation_heatmap_streamlit_en.png")
+            fig.savefig(output_path_en, dpi=300, bbox_inches='tight')
+            st.success(f"✓ English chart saved: `{output_path_en}`")
         
         if show_stats:
             st.subheader("📈 Статистика кореляцій")
@@ -425,6 +452,28 @@ elif page == "📊 Аналіз розподілу":
             output_path = os.path.join(output_dir, "distribution_analysis_streamlit.png")
             fig.savefig(output_path, dpi=300, bbox_inches='tight')
             st.success(f"✓ Графік розподілу збережено: `{output_path}`")
+
+            # Збереження англомовної копії
+            if show_histogram:
+                axes[0].set_title('Case count distribution histogram', fontsize=12, fontweight='bold')
+                axes[0].set_xlabel('Registered cases', fontsize=11)
+                axes[0].set_ylabel('Frequency (months)', fontsize=11)
+                axes[0].legend(labels=[f'Mean: {case_counts.mean():.1f}', f'Median: {case_counts.median():.1f}'])
+            if show_boxplot:
+                axes[1].set_title('Boxplot for outlier detection', fontsize=12, fontweight='bold')
+                axes[1].set_ylabel('Registered cases', fontsize=11)
+                axes[1].texts.clear()
+                median = case_counts.median()
+                q1 = case_counts.quantile(0.25)
+                q3 = case_counts.quantile(0.75)
+                axes[1].text(0.15, median, f'Median\n{median:.1f}', fontsize=9, ha='left', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+                axes[1].text(0.15, q1, f'Q1\n{q1:.1f}', fontsize=9, ha='left', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+                axes[1].text(0.15, q3, f'Q3\n{q3:.1f}', fontsize=9, ha='left', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+            plt.suptitle('Gonorrhea morbidity distribution analysis', fontsize=14, fontweight='bold')
+            plt.tight_layout()
+            output_path_en = os.path.join(output_dir, "distribution_analysis_streamlit_en.png")
+            fig.savefig(output_path_en, dpi=300, bbox_inches='tight')
+            st.success(f"✓ English chart saved: `{output_path_en}`")
         
         if show_stats:
             st.subheader("📊 Описова статистика")

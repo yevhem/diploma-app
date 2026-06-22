@@ -80,4 +80,22 @@ output_path = output_dir / 'distribution_analysis.png'
 fig.savefig(output_path, dpi=300, bbox_inches='tight')
 print(f'\n✓ Графік розподілу збережено: {output_path.resolve()}')
 
+# Збереження англомовної копії
+axes[0].set_title('Case Count Distribution Histogram', fontsize=12, fontweight='bold')
+axes[0].set_xlabel('Registered cases', fontsize=11)
+axes[0].set_ylabel('Frequency (months)', fontsize=11)
+axes[0].legend(labels=[f'Mean: {df["case_count"].mean():.1f}', f'Median: {df["case_count"].median():.1f}'])
+axes[1].set_title('Boxplot for Outlier Detection', fontsize=12, fontweight='bold')
+axes[1].set_ylabel('Registered cases', fontsize=11)
+for text in list(axes[1].texts):
+    text.remove()
+axes[1].text(0.15, median, f'Median\n{median:.1f}', fontsize=9, ha='left')
+axes[1].text(0.15, q1, f'Q1\n{q1:.1f}', fontsize=9, ha='left')
+axes[1].text(0.15, q3, f'Q3\n{q3:.1f}', fontsize=9, ha='left')
+plt.suptitle('Gonorrhea Morbidity Distribution Analysis', fontsize=14, fontweight='bold', y=1.00)
+plt.tight_layout()
+output_path_en = output_dir / 'distribution_analysis_en.png'
+fig.savefig(output_path_en, dpi=300, bbox_inches='tight')
+print(f'✓ English chart saved: {output_path_en.resolve()}')
+
 plt.show()

@@ -47,4 +47,13 @@ output_path = 'outputs/morbidity_chart.png'
 plt.savefig(output_path, dpi=300, bbox_inches='tight')
 print(f"✓ Графік збережено: {output_path}")
 
+# Збереження англомовної копії
+ax.set_xlabel('Date', fontsize=12, fontweight='bold')
+ax.set_ylabel('Number of cases', fontsize=12, fontweight='bold')
+ax.set_title('Morbidity Chart (2017-2021)', fontsize=14, fontweight='bold', pad=20)
+ax.legend(['Number of cases'], loc='upper right', fontsize=11)
+output_path_en = 'outputs/morbidity_chart_en.png'
+plt.savefig(output_path_en, dpi=300, bbox_inches='tight')
+print(f"✓ English chart saved: {output_path_en}")
+
 plt.show()

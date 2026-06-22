@@ -83,6 +83,18 @@ output_path = output_dir / 'correlation_heatmap.png'
 plt.savefig(output_path, dpi=300, bbox_inches='tight')
 print(f"\n✓ Графік кореляції збережено: {output_path.resolve()}")
 
+# Збереження англомовної копії
+plt.title('Correlation Matrix of Target Variable and Lag Features', 
+          fontsize=14, fontweight='bold', pad=20)
+plt.xlabel('Features', fontsize=12)
+plt.ylabel('Features', fontsize=12)
+plt.xticks(rotation=45, ha='right')
+plt.yticks(rotation=0)
+plt.tight_layout()
+output_path_en = output_dir / 'correlation_heatmap_en.png'
+plt.savefig(output_path_en, dpi=300, bbox_inches='tight')
+print(f"✓ English chart saved: {output_path_en.resolve()}")
+
 # Експорт матриці кореляції у CSV
 csv_path = output_dir / 'correlation_matrix.csv'
 correlation_matrix.to_csv(csv_path)

@@ -71,6 +71,22 @@ out_path = out_dir / 'seasonal_decomposition.png'
 fig.savefig(out_path, dpi=300, bbox_inches='tight')
 print(f'\n✓ Графік декомпозиції збережено: {out_path.resolve()}')
 
+# Збереження англомовної копії
+axes[0].set_ylabel('Observed', fontsize=10)
+axes[0].set_title('Observed data', fontsize=11)
+axes[1].set_ylabel('Trend', fontsize=10)
+axes[1].set_title('Trend (long-term dynamics)', fontsize=11)
+axes[2].set_ylabel('Seasonal', fontsize=10)
+axes[2].set_title('Seasonal component', fontsize=11)
+axes[3].set_ylabel('Residuals', fontsize=10)
+axes[3].set_xlabel('Date', fontsize=10)
+axes[3].set_title('Residuals (model errors)', fontsize=11)
+fig.suptitle('Seasonal decomposition of gonorrhea morbidity time series', fontsize=14, fontweight='bold', y=0.995)
+plt.tight_layout()
+out_path_en = out_dir / 'seasonal_decomposition_en.png'
+fig.savefig(out_path_en, dpi=300, bbox_inches='tight')
+print(f'✓ English chart saved: {out_path_en.resolve()}')
+
 # Виведення статистики
 print(f"\n--- Статистика компонент ---")
 print(f"Середнє значення спостережуваних: {result.observed.mean():.2f}")
